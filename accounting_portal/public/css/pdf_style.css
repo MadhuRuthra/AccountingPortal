@@ -1,0 +1,27 @@
+@font-face {
+  font-family: "Courier New";
+  src: url("../fonts/courier-new.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Courier New Bold";
+  src: url("../fonts/courbd.ttf");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Calibri";
+  src: url("../fonts/calibri.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+*, html {
+  font-family: "Courier New", Arial !important; /* 4 */
+}
+
+.class_calibri {
+  font-family: "Calibri", sans-serif !important; 
+}

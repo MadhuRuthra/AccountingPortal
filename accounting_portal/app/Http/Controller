@@ -1,0 +1,249 @@
+<?php
+namespace App\Http\Controllers;
+use App\Models\Call;
+use App\Models\Product_master;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\UsersImport;
+use App\Exports\UsersExport;
+use Illuminate\Support\Facades\Log;
+use App\Models\Company_master;
+use App\Models\Accounting_invoice;
+use App\Models\Master_cities;
+use DB;
+// use App\Create_invoice;
+
+set_time_limit(0);
+
+
+class Create_invoiceController extends Controller
+{
+
+  
+  //create import  
+
+  public function fileImportExport()
+    {
+       return view('file-import');
+    }
+      
+
+    public function fileImport(Request $request) 
+    {
+
+      
+        $mxaccid =  DB::select('SELECT (MAX(accounting_invoice_id) + 1) AS mxaccid FROM accounting_invoices');
+        $mxaccidValue = $mxaccid[0]->mxaccid;
+//         $string='CMQ';
+       
+// foreach ($mxaccid as $result)
+// {
+//     //echo $result->accounting_invoice_id . "____| " . $result->nome . "<br />";
+//     $string .=  $result['mxaccid'];
+// }
+
+        $configuraciones = Master_cities::select('id', 'name')->get()->toArray();
+        $product_name = Product_master::select('product_master_id', 'product_master_name')->get()->toArray();
+        $financial_year = date("Y")."-".date("y", strtotime('+1 year'));
+        $quot = "/".date("y")."-".date("y", strtotime('+1 year'));
+        $quotation_sr_no ="CMQ".$mxaccidValue.$quot;
+        $submit_date = date("Y-m-d H:m:s");
+        $gst_status = 'Y';
+        $session_id = '1';
+
+        //store into database
+        $activity = $request->input('invoice_activity');
+        $invoice_activity_status = $request->input('invoice_activity_status');
+        $invoice_billing_location = $request->input('invoice_billing_location');
+        $invoice_company_details = $request->input('invoice_company_details');
+        $invoice_start_date = $request->input('invoice_start_date');
+        $invoice_end_date = $request->input('invoice_end_date');
+
+        $payment_date = $request->input('payment_date');
+        $payment_status = $request->input('payment_status');
+        $payment_received = $request->input('payment_received');
+
+        $hid_prdqty = $request->input('hid_prdqty');
+        $hid_prdrate = $request->input('hid_prdrate');
+        $hid_prdgstpercentage = $request->input('hid_prdgstpercentage');
+        $hid_prdtotalamount = $request->input('hid_prdtotalamount');
+
+        $data=array('financial_year'=>$financial_year, 'user_id'=>$session_id,'quotation_sr_no'=>$quotation_sr_no, 'billing_location_id'=>$invoice_billing_location, 'contact_person'=>$invoice_company_details, 'activity'=>$activity, 'activity_details'=>$invoice_activity_status, 'start_date'=>$invoice_start_date,'end_date'=>$invoice_end_date, 'submit_date'=>$submit_date, 'gst_status'=>$gst_status, 'payment_status'=>$payment_status, 'payment_date'=>$payment_date, 'payment_received'=>$payment_received, 'sub_total_amount'=>$hid_prdtotalamount, 'quantity'=>$hid_prdqty, 'rate'=>$hid_prdrate, 'gst_percentage'=>$hid_prdgstpercentage, 'gst_amount'=>($hid_prdtotalamount - $hid_prdrate), 'total_amount'=>$hid_prdtotalamount);
+
+        DB::table('accounting_invoices')->insert($data);
+
+        // $companies = Company_master::all();
+
+        // return view('create_invoice');
+        // return view('create_invoice', ['configuraciones' => $configuraciones, 'product_name' => $product_name]);
+
+
+
+        
+        $invoice_product_name = $request->input('invoice_product_name');
+        $invoice_quality = $request->input('invoice_quality');
+        $invoice_rate = $request->input('invoice_rate');
+        $invoice_gst = $request->input('invoice_gst');
+        $invoice_total = $request->input('invoice_total');
+        
+        $max = count($invoice_quality);
+        for ($x = 0; $x < $max; $x++){
+            
+            $data1=array('accounting_invoice_id'=>$mxaccidValue, 'product_master_id'=>$invoice_product_name[$x], 'product_rate'=>$invoice_rate[$x], 'prd_qty'=>$invoice_quality[$x], 'prd_subtotal_amount'=>$invoice_total[$x], 'prd_gst_percentage'=>$invoice_gst[$x], 'prd_gst_amount'=>($invoice_total[$x] - $invoice_rate[$x]), 'prd_total_amount'=>$invoice_total[$x], 'accinvprd_status'=>'Y', 'accinvprd_entry_date'=>'$submit_date');
+            DB::table('accounting_invoice_products')->insert($data1);
+        }
+
+
+        return redirect()->back()->with('success', 'successfully imported');
+
+}
+
+
+
+
+
+
+
+
+
+        //$company_name = Company_master::pluck('company_name')->all();
+
+       
+// 	 Log::info('Submit button clicked at '.now());
+	
+// 	$input_file_path = config('app.input_file_path');
+//         $output_file_path = config('app.output_file_path');   
+//         $time_interval = config('app.time_interval');
+// 	$file_count = config('app.file_count');
+      
+       
+// 	$validated = $request->validate([
+//             'file' => 'required'
+//         ]);
+
+      
+//         $schedule = $request->get('schedule_at');
+//         $schedule_at = date("Y-m-d H:i:s", strtotime($schedule));
+//         $curdtm = date("YmdHi");
+//         $context = $request->get('context');
+//         $caller_id = $request->get('caller_id');
+      
+
+//         $txt_max_retry_count = $request->get('txt_max_retry_count');
+//         $txt_retry_time = $request->get('txt_retry_time');
+
+// 	Excel::import(new UsersImport($request->schedule_at, $request->context,$caller_id, $time_interval, $file_count, $request->input_file_path, $request->output_file_path, $request->context."_".$curdtm), $request->file('file'));
+
+//          $request->file('file')->store('obd_call');
+
+// 	 Log::info('Import the file successfully into database at'.now());
+	
+	
+//         if($request->context==null)
+//         {   
+//             $logicpath=public_path('All');
+//         }else
+//         {
+        
+// 		$logicpath=public_path($request->context);
+//         }
+//         if (!file_exists($logicpath)) {
+
+//             mkdir($logicpath, 0766, true);
+//         }
+//         $data = Call::where('flag','=','i')->get();
+//         $count = Call::where('flag','=','i')->count();
+//         for($i = 0;$i<$count;$i++)
+//         {   
+//             $todayDate = Carbon::now()->format('Ymdhms');
+//             $str1 = Str::random(5);
+
+// 	if($txt_retry_time == 0)
+//         {
+//                 $str= "Channel: SIP/sip1/".$data[$i]->mobile."\r\nContext: ".$request->context."\r\nExtension: ".$data[$i]->mobile."\r\nCallerId: ".$caller_id."\r\nArchive: Yes\r\nAccount: ".$todayDate.$str1;
+// }
+// else{
+
+           
+// 		$str= "Channel: SIP/sip1/".$data[$i]->mobile."\r\nContext: ".$request->context."\r\nExtension: ".$data[$i]->mobile."\r\nCallerId: ".$caller_id."\r\nArchive: Yes\r\nMaxRetries: ".$txt_max_retry_count."\r\nRetryTime: ".$txt_retry_time."\r\nAccount: ".$todayDate.$str1;
+                
+// 	}
+//             $filename=$data[$i]->mobile.$str1;
+//             File::put($logicpath.'/'.$filename.'.call', $str);
+//             $callRecord=Call::firstOrNew(['id' => $data[$i]->id]);
+//             $callRecord->flag="c";            
+// 	    $callRecord->accountcode=$todayDate.$str1;
+//             $callRecord->save();
+            
+//         }
+// 		Log::info($count.'files are generated at'.now());
+
+        
+// 	Session::flash('message', 'Campaign -'.$request->context."_".$curdtm.' Created and Scheduled Sucessfully. After complete this Campaign, then you can create new Campaign!!');
+//         Session::flash('alert-class', 'alert-success');
+
+        
+        //return redirect()->back()->with('success', 'successfully imported');
+
+    //     return view('create_invoice');
+    // }
+
+
+
+    public function fileExport() 
+    {
+        return Excel::download(new UsersExport, 'users-collection.xlsx');
+    }   
+
+    public function create_invoice() 
+    { 
+    
+        $configuraciones = Master_cities::select('id', 'name')->get()->toArray();
+        $product_name = Product_master::select('product_master_id', 'product_master_name')->get()->toArray();
+
+            // $countries =  Master_cities::pluck('name','id');
+            // return View::make('create_invoice')->with('countries', $countries);
+
+            //$configuraciones = Master_cities::pluck('id', 'name');
+            //$product_name = Product_master::select('product_master_id', 'product_master_name')->get()->toArray();
+
+            // $configuraciones = Master_cities::select('id', 'name')->get()->toArray();
+
+            // return view('create_invoice', ['configuraciones' => $configuraciones]);
+
+    //  return view ('create_invoice');
+    return view('create_invoice', ['configuraciones' => $configuraciones, 'product_name' => $product_name]);
+}
+public function store(Request $request)
+    {
+
+        // $post = new Accounting_invoice;
+        // $post-> accounting_invoice_id= $request->accounting_invoice_id;
+        // $post-> activity= $request->activity;
+        // $post-> activity_details= $request->activity_details;
+        //  $post-> = $request->;
+        // $post-> = $request->;
+        // $post-> = $request->;
+        // $post-> = $request->;
+        // $post-> = $request->;
+        // $post-> = $request->;
+
+        // $post->save();
+        // return redirect('add-blog-post-form')->with('status', 'Blog Post Form Data Has Been inserted');
+    }
+
+    public function cancel()
+    {   
+        $command="pkill -9 Copy";    
+        shell_exec($command);
+        
+        return view('create_invoice');
+        
+    }
+     
+}
+

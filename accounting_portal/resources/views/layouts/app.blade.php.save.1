@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>Accounting Portal : Celeb Media</title>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+    <link href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script> 
+
+<!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script> -->
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+<!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+   <script src="{{ asset('js/app.js') }}" defer></script>
+
+<style type="text/css">
+.tooltip-wrapper {
+    min-width: max-content;
+}
+
+.pl-4, .px-4 {
+    padding-left: 1rem !important;
+}
+.pr-4, .px-4 {
+    padding-right: 1rem !important;
+}
+
+/* Basic Tooltips 
+.tbl_list tbody th, .tbl_list tbody td
+{
+      padding: 3px 5px !important;
+}
+
+.tooltip-basic {
+    position: relative;
+    display:block;
+}
+.tooltip-basic-message {
+    color: #000 !important;
+    background-color: #e8e8e8 !important;
+    border: 1px solid #d0d0d0 !important;
+    display: none;
+    width: 600px;
+    max-width: 700px !important;
+    padding: 5px 5px !important;
+    position: absolute;
+    left: 0 !important;
+    bottom:100% !important;
+    font-size: 0.75em !important;
+    z-index: 1052 !important;
+    -webkit-border-radius: 3px !important;
+    -moz-border-radius: 5px !important;
+    border-radius: 5px !important;
+    overflow: visible;
+    margin: auto;
+    display:inline;
+}
+.tooltip-basic-message:before {
+    border-left: 5px solid transparent !important;
+    border-right: 5px solid transparent !important;
+    border-top: 5px solid transparent !important;
+    content:"" !important;
+    display:block;
+    overflow: visible;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute;
+    bottom:-6px !important;
+    left: 5px !important;
+    z-index: 1 !important;
+    margin: auto;
+}
+.tooltip-basic-message:before {
+    left: 50% !important;
+    margin-left: -2.5px !important;
+} */
+
+.tbl_list tbody th, .tbl_list tbody td
+    {
+      padding: 3px 5px !important;
+    }
+.tbl_list tr:nth-child(odd) {
+  background-color: #e9e9e9;
+}
+
+.tbl_list td:first-child {
+  font-weight: bold;
+}
+
+.tooltip-basic {  position: relative; }
+
+.tooltip-basic-message {
+  position: absolute;
+  display: none;
+  background: #FFF;
+  color: #000;
+  border:1px solid #000;
+  padding: 5px;
+  z-index: 1;
+}
+.tip { width: 550px; }
+
+.tooltipTop{
+  top: 20px;
+  display: block;
+}
+
+.tooltipBottom{
+	top: -25px;
+	display: block;
+}
+</style>
+</head>
+<body class=" bg-red-200 min-h-screen font-base">
+<div id="app">
+    
+    <div class="flex flex-col md:flex-row"> 
+
+        @include('includes.sidebar')
+
+        <div class="w-full md:flex-1">
+
+ <nav class="hidden md:flex justify-between items-center bg-white p-4 shadow-md h-16">
+	 <div>
+	<input class="px-4 py-2 bg-gray-200 border border-gray-300 rounded focus:outline-none" type="text"
+               placeholder="Search.." style='display: none;'/>
+    </div>
+    <div class="relative">
+        <button class="mx-2 text-gray-700 focus:outline-none" onclick="toggleDropdown()" style='background-color:#FFF'>
+            <svg class="h-8 w-8 text-black-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="float: left;">
+                <path stroke="none" d="M0 0h24v24H0z"/>
+                <circle cx="12" cy="7" r="4" />
+                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+            </svg>{{ Auth::user()->name }}
+        </button>
+        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden">
+            <button  onclick="location.href='{{ route('changepassword') }}'"
+            class="block w-full px-2 py-2 text-left text-gray-800 hover:bg-gray-100 focus:outline-none">Change Password</button>
+            <button onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+            class="block w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-100 focus:outline-none">Logout</button>
+        </div>
+    </div>
+</nav>
+            <main>
+                <!-- Replace with your content -->
+                <div class="px-8 py-6">
+                    @yield('content')
+                </div>
+                <!-- /End replace -->
+            </main>
+        </div>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
+    </div>
+</div>
+
+<script>
+  $(function () {
+var invoice_table= $('#invoice_data-table').DataTable( {
+        dom: 'lBfrtip',
+        buttons: [
+		{
+			"extend": 'excel',
+			"text": 'EXCEL',
+			"titleAttr": 'EXCEL',
+			"action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+		},
+		{
+			"extend": 'csv',
+			"text": 'CSV',
+			"titleAttr": 'CSV',
+			"action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+		},
+		{
+			"extend": 'pdfHtml5',
+			"text": 'PDF',
+			"titleAttr": 'PDF',
+			"orientation": 'landscape',
+                	"pageSize": 'sra3',
+			"action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+		}, 'colvis'
+        ], 
+          processing: true,
+          serverSide: true,
+          ajax: {
+            url: "{{ route('invoice') }}",
+            data: function (d) {
+                d.detail_approved = $('#detail_approved').val(),
+                d.detail_to_date=$('#detail_to_date').val(),
+                d.detail_from_date=$('#detail_from_date').val(),
+                d.detail_search=$('#detail_search').val()
+            }
+            
+          },
+          columns: [
+             {data:'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, className: "text-center" },
+              {data:'submit_date',name:'submit_date', className: "text-center" },
+              {data:'activity_details', name:'activity_details'},
+              {data:'quantity',name:'quantity', className: "text-right" },
+          {data:'rate_format',name:'rate_format', className: "text-right" },
+          {data:'sub_total_amount_format', name:'sub_total_amount_format', className: "text-right" },
+          {data:'gst_amount_format',name:'gst_amount_format', className: "text-right" },
+          {data:'total_amount_format',name:'total_amount_format', className: "text-right" },
+	  {data:'action',name:'action', className: "text-center" },
+      {data:'filing_upload',name:'filing_upload', className: "text-center" },
+     
+          ]
+      }); 
+$('#invoice_data-table tbody').on('mouseenter', 'td', function () {
+        var colIdx = invoice_table.cell(this).index().column;
+
+        $(invoice_table.cells().nodes()).removeClass('highlight');
+        $(invoice_table.column(colIdx).nodes()).addClass('highlight');
+    });
+
+ $('#detail_approved').change(function(){
+        invoice_table.draw();
+        }); 
+ $('#detail_get_filter').click(function(){
+            
+            invoice_table.draw();
+        });
+});
+
+function newexportaction(e, dt, button, config) {
+         var self = this;
+         var oldStart = dt.settings()[0]._iDisplayStart;
+         dt.one('preXhr', function (e, s, data) {
+             // Just this once, load all data from the server...
+             data.start = 0;
+             data.length = 2147483647;
+             dt.one('preDraw', function (e, settings) {
+                 // Call the original action function
+                 if (button[0].className.indexOf('buttons-copy') >= 0) {
+                     $.fn.dataTable.ext.buttons.copyHtml5.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-excel') >= 0) {
+                     $.fn.dataTable.ext.buttons.excelHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.excelHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.excelFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-csv') >= 0) {
+                     $.fn.dataTable.ext.buttons.csvHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.csvHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.csvFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-pdf') >= 0) {
+                     $.fn.dataTable.ext.buttons.pdfHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.pdfHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.pdfFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-print') >= 0) {
+                     $.fn.dataTable.ext.buttons.print.action(e, dt, button, config);
+                 }
+                 dt.one('preXhr', function (e, s, data) {
+                     // DataTables thinks the first item displayed is index 0, but we're not drawing that.
+                     // Set the property to what it was before exporting.
+                     settings._iDisplayStart = oldStart;
+                     data.start = oldStart;
+                 });
+                 // Reload the grid with the original page. Otherwise, API functions like table.cell(this) don't work properly.
+                 setTimeout(dt.ajax.reload, 0);
+                 // Prevent rendering of the full data to the DOM
+                 return false;
+             });
+         });
+         // Requery the server with the new one-time export settings
+         dt.ajax.reload();
+     }
+</script>
+
+
+<script type="text/javascript">//<![CDATA[
+$(function () {
+var summary_table= $('#summary_data-table').DataTable( {
+      "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+      ],
+        dom: 'lBfrtip',
+	// dom: 'Bfrtip',
+	colReorder: true,
+        buttons: [
+		{
+			"extend": 'excel',
+			"text": 'EXCEL',
+			"titleAttr": 'EXCEL',
+			"action": newexportaction,
+			exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+
+		},
+		{
+			"extend": 'csv',
+			"text": 'CSV',
+			"titleAttr": 'CSV',
+			"action": newexportaction,
+			exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+
+		},
+		{
+			"extend": 'pdfHtml5',
+			"text": 'PDF',
+			"titleAttr": 'PDF',
+			"orientation": 'landscape',
+                	"pageSize": 'sra3',
+			"action": newexportaction,
+			exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+
+		}, 'colvis'
+        ], 
+          processing: true,
+          serverSide: true,
+          ajax: {
+            url: "{{ route('summary_list') }}",
+            data: function (d) {
+                d.detail_approved = $('#detail_approved').val(),
+                d.detail_to_date=$('#detail_to_date').val(),
+                d.detail_from_date=$('#detail_from_date').val(),
+                d.detail_search=$('#detail_search').val()
+            }
+            
+          },
+		          columns: [
+	  {data:'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+          {data:'financial_year',name:'financial_year'},
+          {data:'submit_date', name:'submit_date'},
+          {data:'quotation_sr_no',name:'quotation_sr_no'},
+          {data:'po_details',name:'po_details'},
+          {data:'invoice_sr_no',name:'invoice_sr_no'},
+          {data:'received_date',name:'received_date'},
+          {data:'activity',name:'activity'},
+          {data:'company_location',name:'company_location'},
+          {data:'contact_person',name:'contact_person'},
+          {data:'activity_details',name:'activity_details', className: "text-left"},
+          {data:'quantity', name:'quantity', className: "text-right"},
+          {data:'rate', name:'rate', className: "text-right"},
+          {data:'sub_total_amount_format',name:'sub_total_amount_format', className: "text-right"},
+          {data:'gst_amount_format', name:'gst_amount_format', className: "text-right"},
+          {data:'total_amount_format', name:'total_amount_format', className: "text-right"},
+          {data:'campaign_date', name:'campaign_date'},
+          {data:'submit_date', name:'submit_date'},
+          {data:'gst_statuses', name:'gst_statuses'},
+          {data:'days_diff', name:'days_diff'},
+          {data:'payment_date', name:'payment_date'},
+          {data:'payment_methoded', name:'payment_methoded'},
+          {data:'remarks', name:'remarks', className: "text-left"},
+          {data:'action', name:'action'},
+          ],
+	rowCallback: function(row, data) {
+		console.log("=="+data['days_diff']+"==");
+		if(data['days_diff'] == 'RECEIVED') {
+			$(row).find('td:eq(19)').css('color', 'blue');
+		} else if(data['days_diff'] == '&lt; 30') {
+                        $(row).find('td:eq(19)').css('color', 'green');
+                } else if(data['days_diff'] == '&lt; 60') {
+                        $(row).find('td:eq(19)').css('color', 'light orange');
+                } else if(data['days_diff'] == '&lt; 90') {
+                        $(row).find('td:eq(19)').css('color', 'orange');
+                } else if(data['days_diff'] == '&gt; 90') {
+                        $(row).find('td:eq(19)').css('color', 'red');
+                } else if(data['days_diff'] == 'INVOICE NOT GENERATED') {
+                        $(row).find('td:eq(19)').css('color', 'red');
+                }
+
+		// WRONG - 2106 // $(row).attr('title', 'Month		  : '+data['financial_year']+'\nQuotation No       : '+data['quotation_sr_no']+'\nPO Details	   : '+data['po_invoice']+'\nParticulars           : '+data['activity_details']+'\nQuantity              : '+data['quantity']+'\nSub Total	     : '+data['sub_total_amount']+'\nGST Amount        : '+data['gst_amount']+'\nTotal Amount       : '+data['total_amount']+'\nCampaign Date   : '+data['campaign_date']+'\nSubmit Date        : '+data['submit_date']+'\nPayment Details : '+data['payment_methoded']+'');
+		// CORRECT$('td', row).eq(3).attr('title', 'Month		  : '+data['financial_year']+'\nQuotation Date   : '+data['submit_date']+'\nQuotation No      : '+data['quotation_sr_no']+'\nPO Details	   : '+data['po_invoice']+'\nInvoice No	   : '+data['invoice_sr_no']+'\nInvoice Date	: '+data['received_date']+'\nCompany Name  : '+data['activity']+'\nLocation               : '+data['company_location']+'\nContact Person    : '+data['contact_person']+'\nParticulars           : '+data['activity_details']+'\nQuantity              : '+data['quantity']+'\nRate                    : '+data['rate']+'\nSub Total	     : '+data['sub_total_amount_format']+'\nGST Amount        : '+data['gst_amount_format']+'\nTotal Amount       : '+data['total_amount_format']+'\nCampaign Date   : '+data['campaign_date']+'\nSubmit Date        : '+data['submit_date']+'\nGST Status          : '+data['gst_statuses']+'\nPayment Status  : '+data['days_diff']+'\nReceived Date    : '+data['payment_date']+'\nPayment Mode    : '+data['payment_methoded']+'\nRemarks             : '+data['remarks']+'');
+
+		// $('td', row).eq(3).attr('title', '<div class="tip"><table class="tbl_list" style="width: 100%"><tr><td style="width: 30%">Month </td><td style="width: 70%">: '+data['financial_year']+'</td></tr><tr><td>Quotation Date </td><td>: '+data['submit_date']+'</td></tr><tr><td>Quotation No </td><td>: '+data['quotation_sr_no']+'</td></tr><tr><td>PO Details </td><td>: '+data['po_details']+'</td></tr><tr><td>Invoice No </td><td>: '+data['invoice_sr_no']+'</td></tr><tr><td>Invoice Date </td><td>: '+data['received_date']+'</td></tr><tr><td>Company Name </td><td>: '+data['activity']+'</td></tr><tr><td>Location </td><td>: '+data['company_location']+'</td></tr><tr><td>Contact Person </td><td>: '+data['contact_person']+'</td></tr><tr><td>Particulars </td><td>: '+data['activity_details']+'</td></tr><tr><td>Quantity </td><td>: '+data['quantity']+'</td></tr><tr><td>Rate </td><td>: '+data['rate']+'</td></tr><tr><td>Sub Total </td><td>: '+data['sub_total_amount_format']+'</td></tr><tr><td>GST Amount </td><td>: '+data['gst_amount_format']+'</td></tr><tr><td>Total Amount </td><td>: '+data['total_amount_format']+'</td></tr><tr><td>Campaign Date </td><td>: '+data['campaign_date']+'</td></tr><tr><td>Submit Date </td><td>: '+data['submit_date']+'</td></tr><tr><td>GST Status </td><td>: '+data['gst_statuses']+'</td></tr><tr><td>Payment Status </td><td>: '+data['days_diff']+'</td></tr><tr><td>Received Date </td><td>: '+data['payment_date']+'</td></tr><tr><td>Payment Mode </td><td>: '+data['payment_methoded']+'</td></tr><tr><td>Remarks </td><td>: '+data['remarks']+'</td></tr></table></div>');
+		// $('td', row).eq(3).attr('class', "tooltip-basic");
+    	},
+	/* "fnDrawCallback": function (oSettings) {
+                $('#summary_data-table tbody tr').each(function () {
+                    var sTitle;
+                    var nTds = $('td', this);
+                    var s0 = $(nTds[0]).text();
+                    var s1 = $(nTds[1]).text();
+                    var s2 = $(nTds[2]).text();
+                    var s3 = $(nTds[3]).text();
+                    var s4 = $(nTds[4]).text();
+                    var s5 = $(nTds[5]).text();
+
+                    sTitle = "<div class='tip'><h1>"+s0+"</h1><h1>"+s2+"</h1>";
+		    sTitle += "<table><tbody><tr><td>"+s0+"</td><td>"+s1+"</td><td>"+s2+"</td><td>"+s3+"</td></tr></tbody></table></div>";
+
+                    // this.setAttribute('rel', 'tooltip');
+                    // this.setAttribute('title', sTitle);
+
+		    $(this).attr('data-te-toggle', 'tooltip');
+		    $(this).attr('data-te-html', 'true');
+		    $(this).attr('data-te-ripple-init', '');
+		    $(this).attr('data-te-ripple-color', 'dark');
+		    $(this).attr('title', sTitle);
+                    console.log(this);
+                    // console.log($(this));
+		    // $('#default-Modal').modal('show');
+
+                    $(this).tooltip({
+			// selector: '[data-te-toggle="tooltip"]',
+			placement: 'left',
+			trigger: 'hover',
+			html: true,
+			// sanitize: false,
+			container: 'body',
+			// title: sTitle,
+                    });
+
+                });
+      	    } */
+      }); 
+
+
+$('#summary_data-table tbody').on('mouseenter', 'td', function (e) {
+        var colIdx = summary_table.cell(this).index().column;
+        $(summary_table.cells().nodes()).removeClass('highlight');
+        $(summary_table.column(colIdx).nodes()).addClass('highlight');
+
+	var bodyheight = $("body").height();
+		var halfbodyheight = bodyheight/2;
+		
+		var parent = $(this).parent();
+		var position = $(this).position().top;
+
+		if(position >= halfbodyheight){
+			$(".tooltip-basic-message").removeClass("tooltipBottom tooltipTop");
+			$(this).find('.tooltip-basic-message').addClass("tooltipBottom");
+		}
+		else{
+			$(".tooltip-basic-message").removeClass("tooltipBottom tooltipTop");
+			$(this).find('.tooltip-basic-message').addClass("tooltipTop");
+		}
+
+       	if(colIdx == 3) {
+       		var title = $(this).attr('title');
+       		$(this).data('title', title).removeAttr('title');
+       		$('<p class="tooltip-basic-message"></p>').html(title).appendTo(this).fadeIn('slow');
+	}
+
+	/* tip = $(this).siblings('.tip');
+
+	var mousex = e.pageX + 20; //Get X coodrinates
+                var mousey = e.pageY + 20; //Get Y coordinates
+                var tipWidth = tip.width(); //Find width of tooltip
+                var tipHeight = tip.height(); //Find height of tooltip
+
+                //Distance of element from the right edge of viewport
+                var tipVisX = $(window).width() - (mousex + tipWidth);
+                //Distance of element from the bottom of viewport
+                var tipVisY = $(window).height() - (mousey + tipHeight);
+
+                if ( tipVisX < 20 ) { //If tooltip exceeds the X coordinate of viewport
+                        mousex = e.pageX - tipWidth - 20;
+                } if ( tipVisY < 20 ) { //If tooltip exceeds the Y coordinate of viewport
+                        mousey = e.pageY - tipHeight - 20;
+                }
+                tip.css({  top: mousey, left: mousex }); */
+
+    });
+
+$('#summary_data-table tbody').on('mouseleave', 'td', function () {
+       $(this).attr('title', $(this).data('title'));
+       $('.tooltip-basic-message').remove();
+    });
+
+ $('#detail_approved').change(function(){
+        summary_table.draw();
+        }); 
+ $('#detail_get_filter').click(function(){
+            
+            summary_table.draw();
+        });
+});
+
+/* $(document).ready(function() {
+	//Tooltips
+	$('td').hover(function(){
+		tip = $(this).siblings('.tip');
+		tip.show(); //Show tooltip
+	}, function() {
+		tip.hide(); //Hide tooltip		  
+	}).mousemove(function(e) {
+		var mousex = e.pageX + 20; //Get X coodrinates
+		var mousey = e.pageY + 20; //Get Y coordinates
+		var tipWidth = tip.width(); //Find width of tooltip
+		var tipHeight = tip.height(); //Find height of tooltip
+		
+		//Distance of element from the right edge of viewport
+		var tipVisX = $(window).width() - (mousex + tipWidth);
+		//Distance of element from the bottom of viewport
+		var tipVisY = $(window).height() - (mousey + tipHeight);
+		  
+		if ( tipVisX < 20 ) { //If tooltip exceeds the X coordinate of viewport
+			mousex = e.pageX - tipWidth - 20;
+		} if ( tipVisY < 20 ) { //If tooltip exceeds the Y coordinate of viewport
+			mousey = e.pageY - tipHeight - 20;
+		} 
+		tip.css({  top: mousey, left: mousex });
+	});
+}); */
+
+function newexportaction(e, dt, button, config) {
+         var self = this;
+         var oldStart = dt.settings()[0]._iDisplayStart;
+         dt.one('preXhr', function (e, s, data) {
+             // Just this once, load all data from the server...
+             data.start = 0;
+             data.length = 2147483647;
+             dt.one('preDraw', function (e, settings) {
+                 // Call the original action function
+                 if (button[0].className.indexOf('buttons-copy') >= 0) {
+                     $.fn.dataTable.ext.buttons.copyHtml5.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-excel') >= 0) {
+                     $.fn.dataTable.ext.buttons.excelHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.excelHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.excelFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-csv') >= 0) {
+                     $.fn.dataTable.ext.buttons.csvHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.csvHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.csvFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-pdf') >= 0) {
+                     $.fn.dataTable.ext.buttons.pdfHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.pdfHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.pdfFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-print') >= 0) {
+                     $.fn.dataTable.ext.buttons.print.action(e, dt, button, config);
+                 }
+                 dt.one('preXhr', function (e, s, data) {
+                     // DataTables thinks the first item displayed is index 0, but we're not drawing that.
+                     // Set the property to what it was before exporting.
+                     settings._iDisplayStart = oldStart;
+                     data.start = oldStart;
+                 });
+                 // Reload the grid with the original page. Otherwise, API functions like table.cell(this) don't work properly.
+                 setTimeout(dt.ajax.reload, 0);
+                 // Prevent rendering of the full data to the DOM
+                 return false;
+             });
+         });
+         // Requery the server with the new one-time export settings
+         dt.ajax.reload();
+     }
+//]]></script>
+
+<script>
+  $(function () {
+var customer_table= $('#customer_data-table').DataTable( {
+        dom: 'lBfrtip',
+        buttons: [
+		{
+			"extend": 'excel',
+			"text": 'EXCEL',
+			"titleAttr": 'EXCEL',
+			"action": newexportaction
+		},
+		{
+			"extend": 'csv',
+			"text": 'CSV',
+			"titleAttr": 'CSV',
+			"action": newexportaction
+		},
+		{
+			"extend": 'pdfHtml5',
+			"text": 'PDF',
+			"titleAttr": 'PDF',
+			"orientation": 'landscape',
+                	"pageSize": 'sra3',
+			"action": newexportaction
+		}, 'colvis'
+        ], 
+          processing: true,
+          serverSide: true,
+          ajax: {
+            url: "{{ route('customer') }}",
+            data: function (d) {
+                d.detail_approved = $('#detail_approved').val(),
+                d.detail_to_date=$('#detail_to_date').val(),
+                d.detail_from_date=$('#detail_from_date').val(),
+                d.detail_search=$('#detail_search').val()
+            }
+          },
+          columns: [
+              {data:'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, className: "text-center"},
+              {data:'company_name',name:'cm.company_name', orderable: true, searchable: true},
+	      {data:'gst_no',name:'cm.gst_no', className: "text-center", orderable: true, searchable: true},
+              {data:'company_phone',name:'cm.company_phone', className: "text-center", orderable: true, searchable: true},
+	      {data:'company_email',name:'cm.company_email', orderable: true, searchable: true},
+              {data:'user_address', name:'user_address', orderable: true, searchable: true},
+	      {data:'action', name:'action', className: "text-center"},
+          ]
+      }); 
+$('#customer_data-table tbody').on('mouseenter', 'td', function () {
+        var colIdx = customer_table.cell(this).index().column;
+
+        $(customer_table.cells().nodes()).removeClass('highlight');
+        $(customer_table.column(colIdx).nodes()).addClass('highlight');
+    });
+
+ $('#detail_approved').change(function(){
+        customer_table.draw();
+        }); 
+ $('#detail_get_filter').click(function(){
+            
+            customer_table.draw();
+        });
+});
+
+function newexportaction(e, dt, button, config) {
+         var self = this;
+         var oldStart = dt.settings()[0]._iDisplayStart;
+         dt.one('preXhr', function (e, s, data) {
+             // Just this once, load all data from the server...
+             data.start = 0;
+             data.length = 2147483647;
+             dt.one('preDraw', function (e, settings) {
+                 // Call the original action function
+                 if (button[0].className.indexOf('buttons-copy') >= 0) {
+                     $.fn.dataTable.ext.buttons.copyHtml5.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-excel') >= 0) {
+                     $.fn.dataTable.ext.buttons.excelHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.excelHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.excelFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-csv') >= 0) {
+                     $.fn.dataTable.ext.buttons.csvHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.csvHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.csvFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-pdf') >= 0) {
+                     $.fn.dataTable.ext.buttons.pdfHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.pdfHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.pdfFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-print') >= 0) {
+                     $.fn.dataTable.ext.buttons.print.action(e, dt, button, config);
+                 }
+                 dt.one('preXhr', function (e, s, data) {
+                     // DataTables thinks the first item displayed is index 0, but we're not drawing that.
+                     // Set the property to what it was before exporting.
+                     settings._iDisplayStart = oldStart;
+                     data.start = oldStart;
+                 });
+                 // Reload the grid with the original page. Otherwise, API functions like table.cell(this) don't work properly.
+                 setTimeout(dt.ajax.reload, 0);
+                 // Prevent rendering of the full data to the DOM
+                 return false;
+             });
+         });
+         // Requery the server with the new one-time export settings
+         dt.ajax.reload();
+     }
+</script>
+
+
+<script>
+$(function () {
+var document_table= $('#document_data-table').DataTable( {
+      "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+      ],
+        dom: 'lBfrtip',
+        buttons: [
+                {
+                        "extend": 'excel',
+                        "text": 'EXCEL',
+                        "titleAttr": 'EXCEL',
+                        "action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+                },
+                {
+                        "extend": 'csv',
+                        "text": 'CSV',
+                        "titleAttr": 'CSV',
+                        "action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+                },
+                {
+                        "extend": 'pdfHtml5',
+                        "text": 'PDF',
+                        "titleAttr": 'PDF',
+                        "orientation": 'landscape',
+                        "pageSize": 'sra3',
+                        "action": newexportaction,
+			 exportOptions: {
+                        columns: "thead th:not(.noExport)"
+                    }
+                }, 'colvis'
+        ],
+          processing: true,
+          serverSide: true,
+	  ajax: {
+            url: "{{ route('document') }}",
+            data: function (d) {
+                d.detail_approved = $('#detail_approved').val(),
+                d.detail_to_date=$('#detail_to_date').val(),
+                d.detail_from_date=$('#detail_from_date').val(),
+                d.detail_search=$('#detail_search').val()
+            }
+          },
+          columns: [
+              {data:'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+              {data:'document_details', name:'document_details'},
+              {data:'action', name:'action'},
+          ]
+      });
+$('#document_data-table tbody').on('mouseenter', 'td', function () {
+        var colIdx = document_table.cell(this).index().column;
+
+        $(document_table.cells().nodes()).removeClass('highlight');
+        $(document_table.column(colIdx).nodes()).addClass('highlight');
+    });
+
+	$('#detail_approved').change(function(){
+        	document_table.draw();
+	});
+	$('#detail_get_filter').click(function(){
+		document_table.draw();
+        });
+});
+
+
+
+  $(function () {
+var product_table= $('#product_data-table').DataTable( {
+      "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+      ],
+        dom: 'lBfrtip',
+        buttons: [
+		{
+			"extend": 'excel',
+			"text": 'EXCEL',
+			"titleAttr": 'EXCEL',
+			"action": newexportaction
+		},
+		{
+			"extend": 'csv',
+			"text": 'CSV',
+			"titleAttr": 'CSV',
+			"action": newexportaction
+		},
+		{
+			"extend": 'pdfHtml5',
+			"text": 'PDF',
+			"titleAttr": 'PDF',
+			"orientation": 'landscape',
+                	"pageSize": 'sra3',
+			"action": newexportaction
+		}, 'colvis'
+        ], 
+          processing: true,
+          serverSide: true,
+          ajax: {
+            url: "{{ route('product') }}",
+            data: function (d) {
+                d.detail_approved = $('#detail_approved').val(),
+                d.detail_to_date=$('#detail_to_date').val(),
+                d.detail_from_date=$('#detail_from_date').val(),
+                d.detail_search=$('#detail_search').val()
+            }
+            
+          },
+          columns: [
+              {data:'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+              // {data:'product_master_id',name:'product_master_id'},
+              {data:'product_master_name',name:'pm.product_master_name'},
+          {data:'product_master_details',name:'pm.product_master_details'},
+          {data:'product_qty', name:'pm.product_qty'},
+          {data:'product_rate', name:'pm.product_rate'},
+          {data:'product_gst', name:'pm.product_gst'},
+          {data:'product_status',name:'pm.product_status'},
+          // {data:'product_master_entdate', name:'product_master_entdate'},
+          ]
+      }); 
+$('#product_data-table tbody').on('mouseenter', 'td', function () {
+        var colIdx = product_table.cell(this).index().column;
+
+        $(product_table.cells().nodes()).removeClass('highlight');
+        $(product_table.column(colIdx).nodes()).addClass('highlight');
+    });
+
+ $('#detail_approved').change(function(){
+        product_table.draw();
+        }); 
+ $('#detail_get_filter').click(function(){
+            
+            product_table.draw();
+        });
+});
+
+function newexportaction(e, dt, button, config) {
+         var self = this;
+         var oldStart = dt.settings()[0]._iDisplayStart;
+         dt.one('preXhr', function (e, s, data) {
+             // Just this once, load all data from the server...
+             data.start = 0;
+             data.length = 2147483647;
+             dt.one('preDraw', function (e, settings) {
+                 // Call the original action function
+                 if (button[0].className.indexOf('buttons-copy') >= 0) {
+                     $.fn.dataTable.ext.buttons.copyHtml5.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-excel') >= 0) {
+                     $.fn.dataTable.ext.buttons.excelHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.excelHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.excelFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-csv') >= 0) {
+                     $.fn.dataTable.ext.buttons.csvHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.csvHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.csvFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-pdf') >= 0) {
+                     $.fn.dataTable.ext.buttons.pdfHtml5.available(dt, config) ?
+                         $.fn.dataTable.ext.buttons.pdfHtml5.action.call(self, e, dt, button, config) :
+                         $.fn.dataTable.ext.buttons.pdfFlash.action.call(self, e, dt, button, config);
+                 } else if (button[0].className.indexOf('buttons-print') >= 0) {
+                     $.fn.dataTable.ext.buttons.print.action(e, dt, button, config);
+                 }
+                 dt.one('preXhr', function (e, s, data) {
+                     // DataTables thinks the first item displayed is index 0, but we're not drawing that.
+                     // Set the property to what it was before exporting.
+                     settings._iDisplayStart = oldStart;
+                     data.start = oldStart;
+                 });
+                 // Reload the grid with the original page. Otherwise, API functions like table.cell(this) don't work properly.
+                 setTimeout(dt.ajax.reload, 0);
+                 // Prevent rendering of the full data to the DOM
+                 return false;
+             });
+         });
+         // Requery the server with the new one-time export settings
+         dt.ajax.reload();
+     }
+</script>
+
+
+<script>
+    function toggleDropdown() {
+        var dropdownMenu = document.getElementById("dropdown-menu");
+        dropdownMenu.classList.toggle("hidden");
+    }
+
+    // Close the dropdown menu if clicked outside
+    window.addEventListener('click', function(event) {
+        var dropdownMenu = document.getElementById("dropdown-menu");
+        var profileButton = document.querySelector('.text-gray-700');
+
+        if (!profileButton.contains(event.target)) {
+            dropdownMenu.classList.add('hidden');
+        }
+    });
+</script>
+</body>
+</html>
+

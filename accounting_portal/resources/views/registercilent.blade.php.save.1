@@ -1,0 +1,216 @@
+@extends('layouts.app')
+@section('content')
+
+<div class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4 flex flex-col">
+
+		<!-- <div class="text-center font-bold text-black text-3xl"><img src="public/css/celebmedia_logo.png" alt="logo" class="logo" style="width: 240px;height: 93px;margin: auto;"></div> -->
+                <div class="mb-4 text-center text-2xl" style="color:red">Register Client</div>
+
+                <form action="{{ route('registercilent') }}" method="POST" id="register_cilent_form">
+                    @csrf
+					<div class="- mx-3 flex mb-6 mt-2">
+					<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+					<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Client Name *
+								</label>
+                        <input type="text" name="name" id="name" placeholder="Full Name"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required />
+                        @error('name')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+						</div>
+
+						<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+						<label class="uppercase tracking-wide text-black mb-2" for="company">
+										 Primary Email *
+								</label>
+                        <input type="email" name="email" placeholder="Email Address"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required />
+                        @error('email')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+
+
+
+				  <div class="- mx-3 flex mb-6">
+				  <div class="md:w-1/2 px-3 mb-6 md:mb-0">
+				  <label class="uppercase tracking-wide text-black mb-2" for="company">
+										GST Number *
+								</label>
+                        <input type="text" name="gst_no" id="gst_no" placeholder="GST Number"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('gst_no')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										HSN/SAC Code *
+								</label>
+                        <input type="text" name="hsn_sac_code" id="hsn_sac_code" placeholder="HSN/SAC Code"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('hsn_sac_code')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+	<div class="- mx-3 flex mb-6">
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Company type *
+								</label>
+                        <input type="text" name="company_type" id="company_type" placeholder="Company Type"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('company_type')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Primary Contact User *
+								</label>
+                        <input type="text" name="company_contact_user" id="company_contact_user"  placeholder="Contact User"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('company_contact_user')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+	<div class="- mx-3 flex mb-6">
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Primary Phone *
+								</label>
+                        <input type="text" name="company_phone" id="company_phone" placeholder="Phone Number"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('company_phone')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Company Address *
+								</label>
+                        <input type="text" name="company_address" id="company_address" placeholder="Address"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('company_address')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+	<div class="- mx-3 flex mb-6">
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										City *
+								</label>
+                        <input type="text" name="company_location" id="company_location" placeholder="City"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('company_location')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										State *
+								</label>
+                        <input type="text" name="company_state" id="company_state" placeholder="State"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+	<div class="- mx-3 flex mb-6">
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+										Zip Code *
+								</label>
+                        <input type="text" name="company_pincode" id="company_pincode" placeholder="Pincode"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" required/>
+                        @error('')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+									Secondary Contact User
+								</label>
+                        <input type="text" name="contact_person_secondary" id="contact_person_secondary" placeholder="Contact User"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white" />
+                        @error('')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	</div>
+
+	<div class="- mx-3 flex mb-6">
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+									Secondary Contact Phone
+								</label>
+                        <input type="text" name="contact_no_secondary" id="Company_contact_no" placeholder="Contact Phone"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white"/>
+                        @error('')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror
+	</div>
+	<div class="md:w-1/2 px-3 mb-6 md:mb-0">
+	<label class="uppercase tracking-wide text-black mb-2" for="company">
+									Secondary Email 
+								</label>
+                        <input type="email" name="company_email_secondary" id="company_email_secondary" placeholder="Email Address"
+                               class="w-full mt-2 py-3 px-4 bg-gray-100 text-gray-700 border border-gray-300 rounded  block appearance-none placeholder-gray-500 focus:outline-none focus:bg-white"/>
+                        @error('')
+                        <p class="text-red-500 text-xs italic mt-4">
+                            {{ $message }}
+                        </p>
+                        @enderror 
+	</div>             
+	</div>
+
+                 
+<div class="mb-12" style="text-align: center">
+        <button type="submit"
+                class="md:w-full mt-7 bg-gray-900 text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full" style="width: 110px;">
+            Submit
+        </button>
+	</div>                   
+                </form>
+         
+            <!-- <div class="flex items-center justify-center py-4 bg-gray-100 text-center">
+                <h1 class="text-gray-600 text-sm">Already have account?</h1>
+                <a href={{route('login')}} class="text-blue-600 font-bold mx-2 text-sm hover:text-blue-500">Login</a>
+            </div> -->
+        
+    </div>
+
+
+@endsection

@@ -1,0 +1,25 @@
+{
+    "courier": {
+        "normal": "courier_normal_b9f42589032c2b97560c225bd7136476",
+        "bold": "\/var\/www\/html\/accounting\/vendor\/dompdf\/dompdf\/lib\/fonts\/Courier-Bold",
+        "italic": "\/var\/www\/html\/accounting\/vendor\/dompdf\/dompdf\/lib\/fonts\/Courier-Oblique",
+        "bold_italic": "\/var\/www\/html\/accounting\/vendor\/dompdf\/dompdf\/lib\/fonts\/Courier-BoldOblique"
+    },
+    "sofia": {
+        "normal": "sofia_normal_4f71eee52227d7aae4fba2d2c985e1e9"
+    },
+    "nunito": {
+        "normal": "nunito_normal_a24d8ab2eddfc6c155a988e1bea4cfad"
+    },
+    "courier new": {
+        "normal": "\/var\/www\/html\/accounting\/storage\/\/fonts\/courier_new_normal_c61932bc4d7270cc4700d4bc642d0aaa",
+        "bold": "courier_new_bold_c61932bc4d7270cc4700d4bc642d0aaa"
+    },
+    "calibri": {
+        "normal": "calibri_normal_179e91879590d3957bb792cb5e16a81f"
+    },
+    "courier new bold": {
+        "normal": "\/var\/www\/html\/accounting\/storage\/\/fonts\/courier_new_bold_normal_914ebfd271746dfc9dd6c0eff4a298bc",
+        "bold": "courier_new_bold_bold_914ebfd271746dfc9dd6c0eff4a298bc"
+    }
+}

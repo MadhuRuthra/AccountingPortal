@@ -1,0 +1,896 @@
+
+@extends('layouts.app')
+@section('content')
+
+<!-- Page Content -->
+      <!-- If Session complete. Quotation Pdf download   -->
+      @if(Session::has('quotation_pdf'))
+         <meta http-equiv="refresh" content="0;url={{ Session::get('quotation_pdf') }}">
+      @endif
+
+      <!-- Form Validation -->
+<script>
+  function validateForm() {
+    var file = document.forms["campaign_form"]["file"].value;
+    var context = document.getElementById("context").value;
+    var caller_id = document.getElementById("caller_id").value;
+    var txt_max_retry_count = document.getElementById("txt_max_retry_count").value;
+    var txt_retry_time = document.getElementById("txt_retry_time").value;
+
+    var flag = true;
+
+    if (file == "" || context == "" || caller_id == "" || txt_max_retry_count == "" || txt_retry_time == "") {
+      if (file == "") {
+        var x = document.getElementById("file");
+        x.style.setProperty("border-color", "red", "important");
+      }
+      if (context == "") {
+        var x = document.getElementById("context");
+        x.style.setProperty("border-color", "red", "important");
+      }
+      if (caller_id == "") {
+        var x = document.getElementById("caller_id");
+        x.style.setProperty("border-color", "red", "important");
+      }
+      if (txt_max_retry_count == "") {
+        var x = document.getElementById("txt_max_retry_count");
+        x.style.setProperty("border-color", "red", "important");
+      }
+      if (txt_retry_time == "") {
+        var x = document.getElementById("txt_retry_time");
+        x.style.setProperty("border-color", "red", "important");
+      }
+
+      flag = false;
+
+    }
+    alert("FL:"+flag);
+
+    if (flag) {
+
+      // Disable the button
+      document.getElementById("submit_btn").disabled = true;
+      document.getElementById("submit_btn").style.backgroundColor = "gray";
+
+      document.getElementById("cancel_btn").disabled = true;
+      document.getElementById("cancel_btn").style.backgroundColor = "gray";
+
+      document.getElementById("clear_btn").disabled = true;
+      document.getElementById("clear_btn").style.backgroundColor = "gray";
+
+      //processing message display
+      var processingMsg = document.createElement("p");
+      processingMsg.textContent = "Invoice creation Processing...please wait";
+      processingMsg.style.fontSize = "18px";
+      submit_btn.parentNode.insertBefore(processingMsg, submit_btn);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  // Validation for data
+   function validate_zero() {
+    if (document.getElementById("txt_max_retry_count").value == 0) {
+      document.getElementById("txt_retry_time").readOnly = true;
+      document.getElementById("txt_retry_time").required = false;
+      var input = document.getElementById("txt_retry_time");
+      input.setAttribute("min", 0);
+      document.getElementById("txt_retry_time").value = 0;
+    } else {
+      document.getElementById("txt_retry_time").readOnly = false;
+      document.getElementById("txt_retry_time").required = true;
+      var input = document.getElementById("txt_retry_time");
+      input.setAttribute("min", 60);
+      document.getElementById("txt_retry_time").value = 900;
+    }
+  }
+</script>
+
+
+<!-- Get the details from company and product models -->
+<?php
+$companies = \App\Models\Company_master::all();
+$products =  \App\Models\Product_master::all();
+$sales = \App\Models\Sales_team::all();
+
+$settings = \App\Models\Master_setting::all();
+foreach ($settings as $settings_name) {
+    if($settings_name->master_settings_id == 3) {
+        $current_state = $settings_name->master_settings_value;
+    }
+}
+?>
+
+
+
+<!-- Auto populate company fields from company name-->
+<script>
+  function populateCompanyName() {
+    var selectedCompanyId = document.getElementById("quota_client_name").value;
+    var com = @json($companies -> keyBy('user_id') -> toArray());
+
+    // Find the selected company data in the companies array
+
+    var selectedCompany = @json($companies -> keyBy('user_id') -> toArray())[selectedCompanyId];
+
+    // Selected company data display in the array
+    document.getElementById("quota_company_name").value = selectedCompany.company_name;
+    document.getElementById("quota_contact_person_hidden").value = selectedCompany.company_contact_user;
+
+    document.getElementById("quota_client_address_hidden").value = selectedCompany.company_address;
+
+    document.getElementById("quota_client_address_hidden_2").value = selectedCompany.company_address_2;
+
+    document.getElementById("quota_client_address_hidden_3").value = selectedCompany.company_address_3;
+
+    document.getElementById("quota_client_address_hidden_4").value = selectedCompany.company_address_4;
+
+    document.getElementById("quota_client_location_hidden").value = selectedCompany.company_location;
+
+    document.getElementById("quota_client_state_hidden").value = selectedCompany.company_state;
+    var clistat = document.getElementById("hd_client_state").value;
+    if(clistat == selectedCompany.company_state) {
+	$('#id_igst_csgst').html('CGST/SGST');
+    } else {
+	$('#id_igst_csgst').html('IGST');
+    }
+
+    document.getElementById("quota_client_pincode_hidden").value = selectedCompany.company_pincode;
+
+    document.getElementById("quota_client_gst_hidden").value = selectedCompany.gst_no;
+
+    document.getElementById("quota_submitted_name").value = selectedCompany.submitted_name;
+    // Initialize select2
+$("#quota_submitted_name").select2({
+     /* Sort data using lowercase comparison */
+     sorter: data => data.sort((a,b) => a.text.toLowerCase() > b.text.toLowerCase() ? 0 : -1)
+});
+
+ // Read selected option
+ $('#quota_submitted_name').click(function(){
+     var username = $('#quota_submitted_name option:selected').text();
+ });
+  }
+</script>
+
+
+
+<!-- Auto populate Product or actvity fields  -->
+<script>
+  function populateProductName(id_prd) {
+    var selectedProductId = document.getElementById("invoice_product_name_" + id_prd).value;
+
+    var com = @json($products -> keyBy('product_master_id') -> toArray());
+
+    // Find the selected company data in the companies array
+    var selectedProduct = @json($products -> keyBy('product_master_id') -> toArray())[selectedProductId];
+
+    // Quantity Calculation
+    var quantity = parseFloat(document.getElementById("invoice_quality_" + id_prd).value);
+    var rate = parseFloat(selectedProduct.product_rate);
+    var gst = parseFloat(selectedProduct.product_gst);
+
+    // Total calculation
+    var total = parseFloat(rate) + ((parseFloat(rate) * parseFloat(gst) / 100));
+
+    document.getElementById("invoice_rate_hidden_" + id_prd).value = selectedProduct.product_rate;
+
+    call_total();
+  }
+
+  // Quantity, Gst Amount, Rate, Total amount Populate and Validation 
+  function call_total() {
+    var prdqty = 0;
+    $('.cls_prdqty').each(function() {
+      prdqty += parseFloat($(this).val());
+    });
+    document.getElementById("hid_prdqty").value = prdqty;
+
+    var prdrate = 0;
+    $('.cls_prdrate').each(function() {
+      prdrate += parseFloat($(this).val());
+    });
+    document.getElementById("hid_prdrate").value = prdrate;
+
+    document.getElementById("hid_prdgstpercentage").value = 18;
+
+    var prdgstamount = 0;
+    $('.cls_prdrate').each(function() {
+      prdgstamount += parseFloat($(this).val());
+    });
+    document.getElementById("hid_prdgstamount").value = prdgstamount;
+
+    var prdtotal = 0;
+    $('.cls_prdtotal').each(function() {
+      prdtotal += parseFloat($(this).val());
+    });
+    document.getElementById("hid_prdtotalamount").value = prdtotal;
+  }
+
+  //Onclick Update Rate function
+  function updateRate(id_prd) {
+    var rdo_quot_type = $('input[name="quot_type"]:checked').val();
+    //alert("=="+rdo_quot_type+"==");
+
+    if(rdo_quot_type == 'A') {
+	$('.update_min_vlu').attr('min', '0');
+    } else if(rdo_quot_type == 'P') {
+        $('.update_min_vlu').attr('min', '1');
+    }
+    var quantity = parseFloat(document.getElementById("invoice_quality_" + id_prd).value);
+    var rate = parseFloat(document.getElementById("invoice_rate_" + id_prd).value);
+    var gst = parseFloat(document.getElementById("invoice_gst_" + id_prd).value);
+
+    var rate_value = parseFloat(rate) * parseFloat(quantity);
+    var total_value = parseFloat(rate_value) + (parseFloat(rate_value) * parseFloat(gst) / 100);
+
+    document.getElementById("invoice_total_" + id_prd).value = total_value.toFixed(2);
+
+    call_total();
+  }
+
+function func_change_min_vlu(rdo_quot_type) {
+    if(rdo_quot_type == 'A') {
+        $('.update_min_vlu').attr('min', '0');
+    } else if(rdo_quot_type == 'P') {
+        $('.update_min_vlu').attr('min', '1');
+    }
+}
+</script>
+
+<style>
+.badge{
+
+  background-color:#880009;
+  width:400px;
+  height:50px;
+  border-radius:22px;
+  display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 95%;
+    font-weight: 700;
+    line-height: 40px;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+
+}
+</style>
+
+<!-- Container for the Generate Quotation  -->
+<div class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4 flex flex-col">
+
+<!-- If Session Success. This modal success popup display in page -->
+@if($message = Session::get('success'))
+
+<div class="modal fade bs-example-modal-md" id="success_msg" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" style=" position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: visible; padding-right: 15px; width: 400px">
+  <div class="modal-dialog modal-md">
+      <div class="modal-content" id='mdl' style="min-height: 320px;">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="width: 40px; padding: 0px; border-radius: 5px; margin-left:335px;">
+        <span aria-hidden="true">x</span>
+        </button>
+        <center>
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 512 512" style="fill:#28a745;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>
+<br>
+<h3 style="color:green; font-size:22px; margin-top:10px;"><b>SUCCESS</b></h3>
+<br>
+        <p style="margin-top:15px;"><b>{{$message}}</b></p>
+        <br>
+        </center>
+        <button type="button" class="btn btn-success" data-dismiss="modal" aria-label="Close" style="margin-top:40px;">Close</button>
+    </div>
+</div>
+</div>
+
+<script>
+$('#success_msg').modal('show');
+</script>
+<!-- Success pop up ends -->
+@endif
+
+<!-- Back button for this page. And this button redirect from Registered Clients -->
+<a href="{{ route('customer') }}" title="Back">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="fill: #880009; width: 24px;" width="24"><path d="M32 15H3.41l8.29-8.29-1.41-1.42-10
+10a1 1 0 0 0 0 1.41l10 10 1.41-1.41L3.41 17H32z" data-name="4-Arrow Left"></path></svg>
+</a>
+
+<!-- Heading for this page -->
+  <div class="mb-4 text-center text-2xl" style="color:white; font-weight:bold"><span class="badge" style=""> Generate Quotation </div>
+  <!-- This form connected to route('file-import') in web.php -->
+  <form action="{{ route('file-import') }}" method="POST" name="campaign_form" id="campaign_form" onsubmit="return validateForm()" enctype="multipart/form-data">
+
+    @csrf
+
+    <!-- client name label and input field -->
+    <div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for=" Client Name" style="line-height: 54px; font-weight: bold;">
+          Client Name*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <select name="quota_client_name" id="quota_client_name" onchange="populateCompanyName()" required class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3 uppercase" title="Client Name" maxlength="50" minlength="1">
+    <!-- company_name_value data display in dropdown -->
+          <option value="" disabled selected>Client Name</option>
+          @foreach ($company_name_value as $company)
+          <option value="{{ $company['user_id'] }}" @if( $_SERVER['QUERY_STRING'] == $company['user_id'] ) selected @endif >{{ $company['company_name'] }} - {{ $company['company_location'] }}</option>
+          @endforeach
+        </select>
+    <div class="col-3">
+    </div>
+  </div>
+</div>
+
+<!-- contact person label and input field -->
+<div class="row flex mb-6 mt-2" style= "display:none;">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Contact Person" style=" font-weight: bold;">
+          Contact Person*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_contact_person_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_contact_person_hidden" title="Contact Person" type="hidden" placeholder="Contact Person" maxlength="500" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- company name label and input field -->
+<div class="row flex mb-6 mt-2" style= "display:none;">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Company Name"  style= "display:none; font-weight: bold;">
+          Company Name *
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_company_name" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_company_name" title="Company Name" type="hidden" placeholder="Company Name" maxlength="500" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- client address 1 label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Client Address" style="line-height: 54px; font-weight: bold;">
+          Client Address 1*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_address_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_address_hidden" title="Client Address 1" type="text" placeholder="Client Address 1" maxlength="300" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- client address 2 label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Client Address" style="line-height: 54px; font-weight: bold;">
+          Client Address 2*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_address_hidden_2" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_address_hidden_2" title="Client Address 2" type="text" placeholder="Client Address 2" maxlength="300" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- client address 3 label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Client Address" style="line-height: 54px; font-weight: bold;">
+          Client Address 3*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_address_hidden_3" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_address_hidden_3" title="Client Address 3" type="text" placeholder="Client Address 3" maxlength="300" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- client address 4 label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Client Address" style="line-height: 54px; font-weight: bold;">
+          Client Address 4*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_address_hidden_4" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_address_hidden_4" title="Client Address 4" type="text" placeholder="Client Address 4" maxlength="300" minlength="1">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+<!-- city / district label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="City / District" style="line-height: 54px; font-weight: bold;">
+          City / District*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_location_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_location_hidden" title="City / District" type="text" placeholder="City / District" maxlength="50" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- state label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="State" style="line-height: 54px; font-weight: bold;">
+          State*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+	<input name="hd_client_state" id="hd_client_state" value="{{ $current_state }}" type="hidden">
+    <input name="quota_client_state_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_state_hidden" title="State" type="text" placeholder="State" maxlength="30" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- pincode label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Pin Code" style="line-height: 54px; font-weight: bold;">
+          Pin Code*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_pincode_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_pincode_hidden" title="Pin Code" type="text" placeholder="Pin Code" maxlength="6" minlength="1" pattern="[1-9][0-9]{5}" onkeypress="return (event.charCode !=8 && event.charCode ==0 || ( event.charCode == 46 || (event.charCode >= 48 && event.charCode <= 57)))">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- Gst number label and input field -->
+<div class="row flex mb-6 mt-2" style= "display:none;">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="GST Number" style="line-height: 54px; font-weight: bold;">
+          GST Number*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_gst_hidden" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_gst_hidden" title="GST Number" type="text" placeholder="GST Number" maxlength="30" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- activity label and input field -->
+<div class="row flex mb-6 mt-2" style= "display:none;">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="title" style="line-height: 54px; font-weight: bold;">
+          Activity*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_activity" required class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_activity" title="Context & Campaign name auto generated" type="text" placeholder="Activity" value="1" maxlength="30" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- particulars label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="title" style="line-height: 54px; font-weight: bold;">
+          Particulars*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_particulars" required class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_particulars" title="Particulars" type="text" placeholder="Particulars" maxlength="100" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+<!-- material code label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="title" style="line-height: 54px; font-weight: bold;">
+          Material Code
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_client_material" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_client_material" title="Material Code" type="text" placeholder="Material code" maxlength="50" minlength="1">
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+	    <!-- Purchase Order Availability label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="title" style="line-height: 54px; font-weight: bold">
+          Quotation Type*
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0" style="padding-top: 18px;">
+	<input type="radio" name="quot_type" id="quot_type" value="P" onclick="func_change_min_vlu('P')" checked="checked"> Professional &nbsp;<input type="radio" name="quot_type" id="quot_type" value="A"  onclick="func_change_min_vlu('A')"> Amateur
+      </div>
+    <div class="col-3">
+    </div>
+</div>
+
+
+    <!-- Remarks label and input field -->
+<div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <label class="uppercase tracking-wide text-black mb-2" for="Remarks" style="line-height: 54px; font-weight: bold;">
+         Remarks
+        </label>
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_remarks" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_remarks" title="Remarks 1" type="text" placeholder="1. Enter Your Remarks Here" maxlength="150">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+    <!-- Remarks label and input field -->
+    <div class="row flex mb-6 mt-2">
+    <div class="col-3">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    </div>
+    <div class="col-3 px-3 mb-6 md:mb-0">
+    <input name="quota_remarks_2" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="quota_remarks_2" title="Remarks 2" type="text" placeholder="2. Enter Your Remarks Here" maxlength="150">
+      </div>
+    <div class="col-3">
+</div>
+</div>
+
+            <!-- Submitted By label and input field -->
+    <div class="row flex mb-6 mt-2">
+      <div class="col-3">
+      </div>
+      <div class="col-3 px-3 mb-6 md:mb-0">
+        <label class="uppercase tracking-wide text-black mb-2" for="Submit By" style="line-height: 54px; font-weight: bold">
+          Submitted By*
+        </label>
+      </div>
+      <div class="col-3 px-3 mb-6 md:mb-0">
+        <select name="quota_submitted_name" id="quota_submitted_name" required class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" title="State">
+          <option value="" disabled selected>-- Choose name --</option>
+          @foreach ($sales as $sales_name)
+                  <option value="{{ $sales_name->sales_team_user }}">{{ $sales_name->sales_team_user }} </option>
+          @endforeach
+        </select>
+        @error('')
+        <p class="text-red-500 text-xs italic mt-4">
+          {{ $message }}
+        </p>
+        @enderror
+      </div>
+      <div class="col-3">
+      </div>
+    </div>
+
+
+    <!-- Product Form -->
+    <div class="-   mx-3 md:flex mb-6" style='display: none'>
+      <div class="md:w-1/2 px-3">
+        <label class="uppercase tracking-wide text-black mb-2" for="title" style=" font-weight: bold;">
+          Po. Date
+        </label>
+        <input name="invoice_po_date" class="w-full text-black border border-gray-200 rounded py-3 px-4 mb-3" id="invoice_po_date" title="Context & Campaign name auto generated" type="datetime-local" value='<?php echo date('Y-m-d'); ?>'>
+      </div>
+
+
+      <div class="md:w-1/2 px-3 mb-6 md:mb-0">
+        <label class="uppercase tracking-wide text-black mb-2" for="title" style=" font-weight: bold;">
+          Gst Status *
+        </label>
+        <div class="flex">
+          <label class="mr-4">
+            <input type="radio" name="invoice_gst_status" value="Yes" checked required>
+            Yes
+          </label>
+          <label>
+            <input type="radio" name="invoice_gst_status" value="No" required>
+            No
+          </label>
+        </div>
+
+      </div>
+
+    </div>
+<br>
+<!-- Heading for Create Activity  -->
+    <div class="mb-4 text-center text-2xl" style="color:white; font-weight:bold"><span class="badge" style="">Create Activity </div>
+
+      @csrf
+ <!-- Add product button -->
+      <div id="fields-container">
+	<div style="text-align: right; margin-bottom: 10px;"><button id="add-field" onclick="addField()" type="button" class="md:w-full bg-gray-900 text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full btn btn-success" style="width: 150px; text-align: center; background-color: #28a745; border-color: #28a745;"> + </button> <input type="hidden" name='hid_count' id='hid_count' value='2'></div>
+        <div class="field-row">
+
+          <div class="">
+            <div class="">
+             <!-- Column names -->
+              <table class="table table-bordered" id="dynamicTable">
+                <tr  style=" font-weight: bold;">
+                  <th style="width: 32%;">Product Name</th>
+                  <th style="width: 15%;">Quantity</th>
+                  <th style="width: 15%;">Rate</th>
+                  <th style="width: 10%;" id="id_igst_csgst">IGST</th>
+                  <th style="width: 20%;">Total</th>
+                  <th style="width: 8%;"></th>
+                </tr>
+		<tbody id="field-row_tbody">
+                <tr>
+                  <!-- Onchange the selected product name and values -->
+                  <td> <select name="invoice_product_name[]" id="invoice_product_name_1" onchange="populateProductName('1')" required class=" text-black border border-gray-200 rounded py-3 px-4 mb-3 invoice_product_name_list" 
+maxlength="100" minlength="1" style="width: 100%;">
+                  <!-- Product Data display in dropdown -->
+                      @foreach ($product_name as $product)
+                      <option value="{{ $product['product_master_id'] }}">{{ $product['product_master_name'] }}</option>
+                      @endforeach
+                    </select></td>
+                    <!-- Product Quantity onchange field -->
+                  <td><input name="invoice_quality[]" onchange="updateRate('1')" required class=" text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdqty" id="invoice_quality_1" title="Context & Campaign name auto generated" type="number" style="width: 100%" placeholder="Quantity" max="999999999999" min="1"></td>
+                  <!-- Product rate onchange field -->
+                  <input name="invoice_rate_hidden[]" required class="text-black border border-gray-200 rounded py-3 px-4 mb-3" id="invoice_rate_hidden_1" title="Context & Campaign name auto generated" type="hidden" style="width: 100%" placeholder="Rate">
+                  <td>
+                    <!-- Product rate onchange field -->
+                    <input name="invoice_rate[]" onchange="updateRate('1')" required class=" text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdrate" id="invoice_rate_1"  title="Context & Campaign name auto generated" type="text" style="width: 100%" placeholder="Rate" maxlength="10" minlength="1">
+                  </td>
+                  <!-- Product Gst onchange field -->
+                  <td><input name="invoice_gst[]" onchange="updateRate('1')" required class=" text-black border border-gray-200 rounded py-3 px-4 mb-3 update_min_vlu" id="invoice_gst_1" title="Context & Campaign name auto generated" type="number" style="width: 100%" placeholder="GST" min="1" max="99" value="18"></td>
+                  <!-- Product total amount onchange field -->
+                  <td><input name="invoice_total[]" readonly required class=" text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdtotal" id="invoice_total_1" title="Context & Campaign name auto generated" type="number" style="width: 100%" placeholder="Total" max="999999999999" min="1"></td>
+                  <!-- Remove product button -->
+                  <td><button onclick="removeField(this)" type="button" class="md:w-full mt-1 bg-gray-900 text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full btn btn-danger">-</button></td>
+                </tr>
+		</tbody>
+              </table>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session alert message for success -->
+      <div class="-x-3 md:flex mb-6">
+        @if(Session::has('message'))
+        <div class="alert {{ Session::get('alert-class') }}" role="alert">
+          {{ Session::get('message') }}
+        </div>
+        @endif
+      </div>
+
+      <div class="-   mx-3 md:flex mb-6">
+        <div class="md:w-1/2 px-3 mb-4 md:mb-0">
+          <a href="{{ route('create_invoice') }}">
+            <!-- Clear button for create quotation page -->
+            <button type="button" id="clear_btn" class=" md:w-full mt-7 bg-gray-900  text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full" style="font-weight:bold; background-color:#000000; !important font-size: 1.1rem;">
+              Clear
+            </button></a>
+        </div>
+        <div class="md:w-1/2 px-3 mb-4 md:mb-0">
+          <!-- Form submit button for create quotation page -->
+          <input type="hidden" name='hid_prdqty' id='hid_prdqty' value=''>
+          <input type="hidden" name='hid_prdrate' id='hid_prdrate' value=''>
+          <input type="hidden" name='hid_prdgstpercentage' id='hid_prdgstpercentage' value=''>
+          <input type="hidden" name='hid_prdgstamount' id='hid_prdgstamount' value=''>
+          <input type="hidden" name='hid_prdtotalamount' id='hid_prdtotalamount' value=''>
+
+          <button type="submit" name="submit_btn" id="submit_btn" class="md:w-full mt-7 bg-gray-900 text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full" style="background-color:#880009; !important; font-weight:bold; font-size: 1.1rem;">
+            Submit
+          </button>
+        </div>
+        <div class="md:w-1/2 px-3 mb-4 md:mb-0">
+          <a href="{{ route('customer') }}">
+            <!-- Cancel button for create quotation page -->
+            <button type="button" id="cancel_btn" class=" md:w-full mt-7 bg-gray-900  text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full" style="font-weight:bold; background-color:#000000; !important font-size: 1.1rem;">
+              Cancel
+            </button></a>
+        </div>
+      </div>
+
+    </form>
+
+</div>
+
+<!-- Add fields button script -->
+<script>
+  var gstIds = [];
+
+  function addField() {
+    var hid_count = document.getElementById('hid_count').value;
+    var table = document.getElementById('field-row_tbody');
+    var row = table.insertRow(table.rows.length - 1);
+    row.classList.add('field-row');
+
+    var html = `
+    <td> <select name="invoice_product_name[]" id="invoice_product_name_` + hid_count + `" onchange="populateProductName(` + hid_count + `)" required class="text-black border border-gray-200 rounded py-3 px-4 mb-3 invoice_product_name_list" maxlength="100" minlength="1" style="width: 100%">
+        @foreach ($product_name as $product)
+                    <option value="{{ $product['product_master_id'] }}">{{ $product['product_master_name'] }}</option>
+                @endforeach
+        </select></td>
+        <td><input name="invoice_quality[]" onchange="updateRate(` + hid_count + `)" required
+            class="text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdqty" id="invoice_quality_` + hid_count + `" title="Context & Campaign name auto generated"
+            type="number" style="width: 100%" placeholder="Quantity" max="999999999999" min="1"></td>  
+        <td><input name="invoice_rate[]" onchange="updateRate(` + hid_count + `)"  required
+            class="text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdrate" id="invoice_rate_` + hid_count + `" title="Context & Campaign name auto generated"
+            type="text" style="width: 100%" placeholder="Rate" maxlength="10" minlength="1">
+            <input name="invoice_rate_hidden[]" onchange="updateRate(` + hid_count + `)" required
+                    class="text-black border border-gray-200 rounded py-3 px-4 mb-3" id="invoice_rate_hidden_` + hid_count + `" title="Context & Campaign name auto generated"
+                    type="hidden" style="width: 100%"  placeholder="Rate"> 
+            </td>  
+        <td><input name="invoice_gst[]" onchange="updateRate(` + hid_count + `)" required
+            class="text-black border border-gray-200 rounded py-3 px-4 mb-3 update_min_vlu" id="invoice_gst_` + hid_count + `" title="Context & Campaign name auto generated"
+            type="number" style="width: 100%" placeholder="GST" min="1" max="99" value="18"></td>
+            <td><input name="invoice_total[]" readonly required
+            class="text-black border border-gray-200 rounded py-3 px-4 mb-3 cls_prdtotal" id="invoice_total_` + hid_count + `" title="Context & Campaign name auto generated"
+            type="number" style="width: 100%" placeholder="Total" max="999999999999" min="1"></td>
+    <!-- Other fields here -->
+    <td><button onclick="removeField(this)" type="button" class="md:w-full mt-1 bg-gray-900 text-white py-2 px-4 border-b-4 hover:border-b-2 border-gray-500 hover:border-gray-100 rounded-full btn btn-danger">-</button>
+    </td>
+    `;
+
+row.innerHTML = html;
+
+// Initialize select2
+$(".invoice_product_name_list").select2({
+     /* Sort data using lowercase comparison */
+     sorter: data => data.sort((a,b) => a.text.toLowerCase() > b.text.toLowerCase() ? 0 : -1)
+});
+
+ // Read selected option
+ $('.invoice_product_name_list').click(function(){
+     var username = $('.invoice_product_name_list option:selected').text();
+     var userid = $('#product_master_id').val();
+
+ });
+
+    hid_count = +hid_count + 1;
+    document.getElementById('hid_count').value = hid_count;
+  }
+
+function removeField(button) {
+  if(($('.cls_prdqty').length) > 1) {
+    var row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+  }
+}
+</script>
+
+<!-- Gst status check and change script -->
+<script type="text/javascript">
+  function handleGSTStatusChange() {
+    var gstStatus = document.querySelector('input[name="invoice_gst_status"]:checked').value;
+    var gstField = document.getElementById('invoice_gst');
+    var gstFieldLabel = document.querySelector('label[for="invoice_gst"]');
+    var addgstField = document.getElementById('[name="invoice_gst_add"]');
+
+    if (gstStatus === 'No') {
+      gstField.disabled = true;
+      addgstField.disabled = true;
+
+    } else {
+      gstField.disabled = false;
+      addgstField.disabled = true;
+
+    }
+  }
+
+  var gstStatusRadios = document.querySelectorAll('input[name="invoice_gst_status"]');
+  gstStatusRadios.forEach(function(radio) {
+    radio.addEventListener('change', handleGSTStatusChange);
+  });
+
+  handleGSTStatusChange();
+</script>
+
+<!-- Search bar for selected clients CDN link -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" /> 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+<script>
+
+$(document).ready(function(){
+ 
+ // Initialize select2
+$("#quota_client_name").select2({ // select client search bar option
+     /* Sort data using lowercase comparison */
+     sorter: data => data.sort((a,b) => a.text.toLowerCase() > b.text.toLowerCase() ? 0 : -1)
+});
+
+ // Read selected option
+ $('#quota_client_name').click(function(){
+     var username = $('#quota_client_name option:selected').text();
+     var userid = $('#user_id').val();
+
+ });
+
+     // Initialize select2
+$("#quota_submitted_name").select2({
+     /* Sort data using lowercase comparison */
+     sorter: data => data.sort((a,b) => a.text.toLowerCase() > b.text.toLowerCase() ? 0 : -1)
+});
+
+ // Read selected option
+ $('#quota_submitted_name').click(function(){
+     var username = $('#quota_submitted_name option:selected').text();
+ });
+
+});
+
+</script>
+
+<script>
+
+$(document).ready(function(){ // select product search bar option
+ 
+ // Initialize select2
+$(".invoice_product_name_list").select2({
+     /* Sort data using lowercase comparison */
+     sorter: data => data.sort((a,b) => a.text.toLowerCase() > b.text.toLowerCase() ? 0 : -1)
+});
+
+ // Read selected option
+ $('.invoice_product_name_list').click(function(){
+     var username = $('.invoice_product_name_list option:selected').text();
+     var userid = $('#product_master_id').val();
+
+ });
+});
+
+window.onload = function() {
+  var a = location.href;
+  var b = a.substring(a.indexOf("?")+1);
+
+  if(b != '') {
+    populateCompanyName()
+  }
+}
+
+$('body').click(function (event)
+{
+   if(!$(event.target).closest('#success_msg').length && !$(event.target).is('#success_msg')) {
+        $('#success_msg').modal('hide');
+   }
+});
+</script>.
+
+@endsection
+
